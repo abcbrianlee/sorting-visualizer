@@ -17,7 +17,13 @@
     <div class ="bar-container">
         <div v-for="(bar,index) in bars"
         :key="index" 
-        :class="{ bar: true, highlighted: index <= sortedIndex, compared: index == itemsBeingCompared, compared2: index == itemsBeingCompared2 }"
+        :class="{ bar: true, 
+             highlighted: index >= bubbleSortedIndex,
+             insertionHighlight: index < sortedIndex,
+             bubbleCompare: index == itemsBeingBubbleCompared,
+             bubbleCompare2: index == itemsBeingBubbleCompared2,
+             compared: index == itemsBeingCompared, 
+             compared2: index == itemsBeingCompared2 }"
         :style ="{height: bar*20 + 'px'}"></div>
     </div>
 </template>
@@ -27,16 +33,14 @@
 export default {
     data () {
         return {
-            continueSorting: true,
-            sortedIndex: -1,
-
             options: [
                 { label: 'Sort', value: 'Sort'},
                 { label: 'Bubble', value: 'Bubble'},
                 { label: 'Merge', value: 'Merge'},
                 { label: 'Insertion', value: 'Insertion'}
-
-            ],
+                ],
+            continueSorting: true,
+            sortedIndex: -1,
             selectedOption: '',
             currentBars: 4,
             minBars: 4,
@@ -45,22 +49,31 @@ export default {
             currentDelay: 100,
             minDelay:0,
             maxDelay:500,
+            itemsBeingBubbleCompared: [-1],
+            itemsBeingBubbleCompared2: [-1],
+            itemsBeingCompared: [],
+            itemsBeingCompared2: [],
         }
     },
     methods: {
         original_display() {
-            this.sortedIndex = -1;
-            this.itemsBeingCompared = -1;
-            this.itemsBeingCompared2 = -1;
+            this.reset_items();
             this.bars=[];
             const numbers = Array.from ({length: this.currentBars}, (_, index) => index + 1);
             this.bars = numbers;
         },
-        randomize() {
-            this.bars = [];
+        reset_items() {
             this.sortedIndex = -1;
+            this.bubbleSortedIndex = 500;
             this.itemsBeingCompared = -1;
-            this.itemsBeingCompared2 = -1;
+            this.itemsBeingCompared2 = -1
+            this.itemsBeingBubbleCompared = -1;
+            this.itemsBeingBubbleCompared2 = -1;
+            
+        },
+        randomize() {
+            this.reset_items();
+            this.bars = [];
             const numbers = Array.from({ length: this.currentBars }, (_, index) => index + 1);
             while (numbers.length > 0) {
                 const randomIndex = Math.floor(Math.random() * numbers.length);
@@ -73,17 +86,15 @@ export default {
             this.bars=[]
             this.currentBars = 4;
             this.currentDelay = 100;
-    
             this.original_display();
-
             this.continueSorting = false;
         },
         start() {
+            
             this.continueSorting = true;
             this.sortedIndex = -1;
             if (this.selectedOption == 'Insertion') {
-                this.insertionSort(this.bars);
-                
+                this.insertionSort(this.bars);   
             }
             if (this.selectedOption == 'Bubble') {
                 this.bubbleSort(this.bars);
@@ -101,8 +112,6 @@ export default {
           await new Promise((resolve) => setTimeout(resolve, delay));
           arr[j + 1] = arr[j];
           j--;
-          
-          
           await new Promise((resolve) => setTimeout(resolve, delay));
         }
         if (!this.continueSorting) {
@@ -111,22 +120,27 @@ export default {
         arr[j + 1] = current;
         this.bars = [...arr];
         this.sortedIndex = i;
-        
         await new Promise((resolve) => setTimeout(resolve, delay));
-
-        
         }
         this.isSorting = false;
+        console.log(this.itemsBeingCompared);
+        console.log(this.itemsBeingCompared2);
         return arr;
         },
         async bubbleSort(arr) {
             let delay = this.currentDelay;
-            
+            let bubbleSortedIndex = arr.length;
             for (let i = arr.length - 1; i >= 0; i--) {
                 for (let j = 0; j < i; j++) {
                     await new Promise((resolve) => setTimeout(resolve, delay));
-                    this.itemsBeingCompared2 = [j + 1];
-                    this.itemsBeingCompared = [j];
+                    if (!this.continueSorting) {
+                        this.itemsBeingBubbleCompared = -1;
+                        this.itemsBeingBubbleCompared2 = -1;
+                        
+                        return;
+                     }
+                    this.itemsBeingBubbleCompared = [j];
+                    this.itemsBeingBubbleCompared2 = [j + 1];
                     await new Promise((resolve) => setTimeout(resolve, delay));
                     if(arr[j] > arr[j+1]) {
                         
@@ -134,41 +148,22 @@ export default {
                         arr[j] = arr[j+1];
                         await new Promise((resolve) => setTimeout(resolve, delay));
                         arr[j+1] = temp;
-                        
+                        await new Promise((resolve) => setTimeout(resolve, delay));
+                        this.itemsBeingBubbleCompared = [j + 1];
+                        this.itemsBeingBubbleCompared2 = [j];
                         await new Promise((resolve) => setTimeout(resolve, delay));
                         
-                    }
+                    } 
                     
                 }
-                
+                bubbleSortedIndex--;
+                this.bubbleSortedIndex = bubbleSortedIndex;
             }
-            return arr;
+            this.itemsBeingBubbleCompared = -1;//Resets markers so index 0 doesn't stay orange
+            this.itemsBeingBubbleCompared2 = -1;//Resets markers so index 1 doesn't stay purple
+            
         },
 
-        /*async bubbleSort(arr) {
-            let delay = this.currentDelay;
-            
-            for (let i = arr.length - 1; i >= 0; i--) {
-                let lastHighlighted = -1;
-                for (let j = 0; j < i; j++) {
-                    await new Promise((resolve) => setTimeout(resolve, delay));
-                    if(arr[j] > arr[j+1]) {
-                        let temp = arr[j];
-                        arr[j] = arr[j+1];
-                        arr[j+1] = temp;
-                        lastHighlighted = j + 1;
-                    }
-                    this.itemsBeingCompared = j;
-                    
-                }
-                this.itemsBeingCompared2 = lastHighlighted;
-                if (lastHighlighted === -1) {
-                    // No swaps occurred during this iteration
-                    break;
-                }
-            }
-            return arr;
-        }*/
     },
     mounted() {
         this.original_display();
@@ -210,6 +205,13 @@ export default {
 .compared2 {
     background-color: green;
 }
-
+.bubbleCompare {
+    background-color: orange;
+}
+.bubbleCompare2 {
+    background-color: purple;
+}
+.insertionHighlight {
+    background-color: white;
+}
 </style>
-
