@@ -2,7 +2,7 @@
     <div class = "app-container">
         <div class ="section-container">
             <div class="left-section">
-                <p>Info:{{ getDescription(selectedOption) }}</p>
+                <p>Info: {{ getDescription(selectedOption) }}</p>
             </div>
             <div class = "button-wrapper">
                 <h1>Sorting Algorithm Visualizer</h1>
@@ -10,9 +10,9 @@
                     <option v-for="option in options" :key="option.value" :value="option.value">{{ option.label }} </option>
                 </select>
                 <p>Selected option: {{ selectedOption }}</p>
-                <button @click ="reset">Reset</button>
-                <button @click ="randomize">Randomize</button>
-                <button @click ="start">Start</button>
+                <button class = "button" @click ="reset">Reset</button>
+                <button class = "button" @click ="randomize">Randomize</button>
+                <button class = "button" @click ="start">Start</button>
                 <br>
                 <input type="range" v-model.number="currentBars" :min="minBars" :max="maxBars" />
                 <h5>Amount of bars: {{currentBars}}</h5>
@@ -47,16 +47,16 @@ export default {
     data () {
         return {
             options: [
-                { label: 'Bubble', value: 'Bubble'},
                 { label: 'Merge', value: 'Merge'},
+                { label: 'Bubble', value: 'Bubble'},
                 { label: 'Insertion', value: 'Insertion'},
                 { label: 'Selection', value: 'Selection'}
                 ],
             info: {
-                Bubble: 'This is bubble sort. Bubble sort is a basic sort and is very ineffecient',
-                Merge: 'This is merge sort',
-                Insertion: 'This is insertion sort',
-                Selection: 'This is selection sort'
+                Bubble: 'This is bubble sort. It compares adjacent elements and swaps them if they are in the wrong order. This process is repeated for each element in the list until the entire list is sorted.  Bubble Sort has a time complexity of O(n^2) making it inefficient for large lists, however is easy to understand and implement, making it useful for educational purposes and small datasets. ',
+                Merge: 'This is merge sort. It is a popular and efficient divide-and-conquer sorting algorithm. It works by recursively dividing and the unsorted list into smaller sublists, sorting them, and then merging them back together to create a sorted list. It has a time complexity of O(n log n) making it an efficient sorting algorithm even for large datasets.  It is widely used due to its efficiency and stability.',
+                Insertion: 'This is insertion sort. It is a simple comparison-based sorting algorithm that builds the final sorted array one element at a time.  The algorithm iterates through the unsorted portion, comparing each element to the elements in the sorted portion and inserting it into its correct position.  It has a time complexity of O(n^2) in the worst-case scenario, making it less efficient than some other sorting algorithms for larger datasets.',
+                Selection: 'This is selection sort. It is a simple in-place comparison-based sorting algorithm. It works by repeatedly finding the minimum element from the unsorted portion of the array and placing it at the beginning of the sorted portion. It has a time complexity of O(n^2), making it inefficient for larger datasets, however it is often considered simpler to implement compared to more complex sorting algorithms.'
             
             },
             continueSorting: true,
@@ -64,7 +64,7 @@ export default {
             selectedOption: '',
             currentBars: 4,
             minBars: 4,
-            maxBars: 31,
+            maxBars: 30,
             bars:[],
             currentDelay: 100,
             minDelay:0,
@@ -117,6 +117,7 @@ export default {
             }
         },
         reset() {
+            this.reset_items();
             this.bars=[]
             this.currentBars = 4;
             this.currentDelay = 100;
@@ -162,9 +163,8 @@ export default {
         this.sortedIndex = i;
         await new Promise((resolve) => setTimeout(resolve, delay));
         }
-        this.isSorting = false;
-        console.log(this.itemsBeingCompared);
-        console.log(this.itemsBeingCompared2);
+        this.sortedIndex = arr.length;
+        this.isSorting = false
         return arr;
         },
         async bubbleSort(arr) {
@@ -319,15 +319,18 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-basis: 10%;
-    margin-left: auto;
+    flex-basis: 25%;
+    margin-left: 200px;
+
     
 }
 .button-wrapper {
-    margin: auto;
+    
+    margin-right:500px;
     height: 100%;
-    flex-basis: 70%;
+    flex-basis: 50%;
     align-self: center;
+
 }
 .bar-container{
     display: flex;
@@ -376,5 +379,12 @@ export default {
 }
 .selectionCompare4 {
     background-color: white;
+}
+.button {
+    background-color: black;
+    color:white;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 20px;
 }
 </style>
